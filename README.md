@@ -10,6 +10,8 @@
 
 ##### Depositar
 
+##### Transferir
+
 ##### Consultar Saldo
 
 ##### Sacar
