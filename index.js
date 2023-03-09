@@ -21,6 +21,7 @@ function operation() {
           'Criar conta',
           'Consultar Saldo',
           'Depositar',
+          'Transferir',
           'Sacar',
           'Sair',
         ],
@@ -35,6 +36,8 @@ function operation() {
         deposit()
       } else if (action === 'Consultar Saldo') {
         getAccountBalance()
+      } else if (action === 'Transferir') {
+        transferMoney()
       } else if (action === 'Sacar') {
         withdraw()
       } else if (action === 'Sair') {
@@ -103,6 +106,7 @@ function deposit() {
     .then((answer) => {
       const accountName = answer['accountName']
 
+      //verify if accont exists
       if (!checkAccount(accountName)) {
         return deposit()
       }
@@ -123,6 +127,57 @@ function deposit() {
     })
 }
 
+// transfer money to another account
+function transferMoney() {
+  inquirer
+    .prompt([
+      {
+        name: 'accountNameOrigin',
+        message: 'Qual o nome da conta origem?',
+      },
+    ])
+    .then((answer) => {
+      const accountNameOrigin = answer['accountNameOrigin']
+
+      //verify if accont exists
+      if (!checkAccount(accountNameOrigin)) {
+        return transferMoney()
+      }
+      
+
+      inquirer
+        .prompt([
+          {
+            name: 'accountNameDestine',
+            message: 'Qual o nome da conta destino?',
+          },
+        ])
+        .then((answer) => {
+          const accountNameDestine = answer['accountNameDestine']
+    
+          //verify if accont exists
+          if (!checkAccount(accountNameDestine)) {
+            return transferMoney()
+          }
+
+          inquirer
+          .prompt([
+            {
+              name: 'amount',
+              message: 'Quanto você deseja Transferir?',
+            },
+          ])
+          .then((answer) => {
+            const amount = answer['amount']  
+            addTransferMoney(accountNameOrigin, accountNameDestine, amount)
+            operation()
+          })
+        })
+    })
+}
+
+
+//function to check if the account exists
 function checkAccount(accountName) {
   if (!fs.existsSync(`accounts/${accountName}.json`)) {
     console.log(chalk.bgRed.black('Esta conta não existe, escolha outro nome!'))
@@ -162,6 +217,43 @@ function addAmount(accountName, amount) {
 
   console.log(
     chalk.green(`Foi depositado o valor de R$${amount} na sua conta!`),
+  )
+}
+
+//function to transfer money to another account
+function addTransferMoney(accountNameOrigin, accountNameDestine, amount) {
+  const accountDataOrigin = getAccount(accountNameOrigin)
+  const accountDataDestine = getAccount(accountNameDestine)
+  
+
+  if (!amount) {
+    console.log(
+      chalk.bgRed.black('Ocorreu um erro, tente novamente mais tarde!'),
+    )
+    return transferMoney()
+  }
+
+  accountDataOrigin.balance =  parseFloat(accountDataOrigin.balance) - parseFloat(amount) 
+  accountDataDestine.balance = parseFloat(amount) + parseFloat(accountDataDestine.balance)
+
+  fs.writeFileSync(
+    `accounts/${accountNameOrigin}.json`,
+    JSON.stringify(accountDataOrigin),
+    function (err) {
+      console.log(err)
+    },
+  )
+
+  fs.writeFileSync(
+    `accounts/${accountNameDestine}.json`,
+    JSON.stringify(accountDataDestine),
+    function (err) {
+      console.log(err)
+    },
+  )
+
+  console.log(
+    chalk.green(`Foi transferido o valor de R$${amount} da conta origem de ${accountNameOrigin} para conta destino ${accountNameDestine}!`),
   )
 }
 
