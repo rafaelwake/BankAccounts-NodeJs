@@ -1,10 +1,15 @@
+// init module external
+
 const inquirer = require('inquirer')
 const chalk = require('chalk')
 
+// init module internal
 const fs = require('fs')
 
 operation()
 
+
+// function to show options to user select
 function operation() {
   inquirer
     .prompt([
@@ -47,6 +52,8 @@ function createAccount() {
   buildAccount()
 }
 
+
+// method to create account
 function buildAccount() {
   inquirer
     .prompt([
